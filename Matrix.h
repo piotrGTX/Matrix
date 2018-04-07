@@ -1,7 +1,9 @@
 #pragma once
-#include <iostream>
+#include "MatrixCore.h"
+#include "Vector.h"
 
-class Matrix {
+class Matrix : public MatrixCore {
+
 public:
 
 	static Matrix myMatrixExampleA();
@@ -12,28 +14,11 @@ public:
 	// Zainicjowana przy pomocy value
 	Matrix(size_t N, size_t M, double value);
 	Matrix(size_t N, double value);
-	// Zainicjowana jawnie podanymi elementami
-	Matrix(size_t N, size_t M, const double **new_arr);
-	Matrix(size_t N, const double **new_arr);
-	// Kopiowanie
-	Matrix(const Matrix& matrix);
-	// Przenosz¹cy
-	Matrix(Matrix&& matrix);
+	// Rzutowanie
+	Matrix(const MatrixCore& matrix);
+	Matrix(MatrixCore&& matrix);
 
-	~Matrix();
-
-	const size_t N, M;
-
-	double* const operator[](size_t index);
-	const double* const operator[](size_t index) const;
-
-	Matrix operator+(const Matrix& other) const;
-	Matrix operator-(const Matrix& other) const;
-	Matrix operator*(double value) const;
-	Matrix operator*(const Matrix& other) const;
-
-	void print() const;
-
+	bool isSquared() const;
 	bool isTriangularUpper() const;
 	bool isTriangularLower() const;
 
@@ -41,8 +26,8 @@ public:
 	Matrix getTriangularLower() const;
 	Matrix getDiagnonal() const;
 
-protected:
+	Vector podstawienieWPrzod(const Vector & other) const;
+	Vector factoryzacjaJacobbiego(const Vector & other, double epsilon) const;
 
-	double ** arr;
 };
 

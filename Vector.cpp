@@ -13,19 +13,15 @@ Vector Vector::myVectorExampleA() {
 	return myVector;
 }
 
-Vector::Vector(size_t N) : Matrix(N, (size_t)1) {
+Vector::Vector(size_t N) : MatrixCore(N, (size_t)1) {
 	// Nop
 }
 
-Vector::Vector(size_t N, double value) : Matrix(N, (size_t)1, value) {
+Vector::Vector(size_t N, double value) : MatrixCore(N, (size_t)1, value) {
 	// Nop
 }
 
-Vector::Vector(size_t N, const double ** new_arr) : Matrix(N, (size_t)1, (const double**)new_arr) {
-	// Nop
-}
-
-Vector::Vector(const Vector & vector) : Vector(vector.N, (const double**)vector.arr) {
+Vector::Vector(const Vector & vector) : MatrixCore(vector.N, (size_t) 1, (const double**)vector.arr) {
 	// Nop
 }
 
@@ -39,28 +35,6 @@ double& Vector::operator[](size_t index) {
 
 const double& Vector::operator[](size_t index) const {
 	return this->arr[index][0];
-}
-
-Vector Vector::podstawienieWPrzod(const Matrix & other) const {
-
-	if (other.N != other.M) {
-		throw "Bad size !";
-	}
-	else if (!other.isTriangularLower()) {
-		throw "Bad Matrix !";
-	}
-
-	Vector result = Vector(*this);
-
-	for (size_t i = 0; i < other.N; i++) {
-		double sum = 0;
-		for (size_t j = 0; j < i; j++) {
-			sum += (result[j] * other[i][j]);
-		}
-		result[i] = (result[i] - sum) / other[i][i];
-	}
-
-	return result;
 }
 
 void Vector::print() const {

@@ -1,6 +1,5 @@
 #include <iostream>
 #include "Matrix.h"
-#include "Vector.h"
 
 using namespace std;
 
@@ -20,8 +19,10 @@ int main() {
 	Matrix C = A.getDiagnonal();
 	Matrix D = A.getTriangularUpper();
 
-	Matrix E = B + C;
-	E.print();
+	A.print();
+	B.print();
+	C.print();
+	(C+D).print();
 
 	system("PAUSE");
 
