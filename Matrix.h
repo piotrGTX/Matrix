@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 
+
 class Matrix {
 public:
 
@@ -18,14 +19,15 @@ public:
 	Matrix(size_t N, size_t M, const double **new_arr);
 	Matrix(size_t N, const double **new_arr);
 	// Kopiowanie
-	Matrix(const Matrix& Matrix);
+	Matrix(const Matrix& matrix);
 	// Przenosz¹cy
-	Matrix(Matrix&& Matrix);
+	Matrix(Matrix&& matrix);
 
 	~Matrix();
 
-	const size_t N, M;
-
+	Matrix & operator=(const Matrix & matrix);
+	Matrix & operator=(Matrix&& matrix);
+	 
 	double* const operator[](size_t index);
 	const double* const operator[](size_t index) const;
 
@@ -48,12 +50,17 @@ public:
 	Matrix getTriangularLower() const;
 	Matrix getDiagnonal() const;
 
-	Matrix podstawienieWPrzod(const Matrix & other) const;
+	Matrix podstawienieWPrzod(const Matrix & vector) const;
+	Matrix metodaJacobiego(const Matrix& vector) const;
+	Matrix metodaSeidla(const Matrix& vector) const;
 
 	double norm() const;
 
-protected:
+	size_t getN() const;
+	size_t getM() const;
 
+private:
+
+	size_t N, M;
 	double ** arr;
 };
-

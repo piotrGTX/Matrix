@@ -95,6 +95,37 @@ Matrix::~Matrix() {
 	}
 }
 
+Matrix & Matrix::operator=(Matrix && matrix) {
+	std::swap(this->N, matrix.N);
+	std::swap(this->M, matrix.M);
+	std::swap(this->arr, matrix.arr);
+
+	return (*this);
+}
+
+Matrix & Matrix::operator=(const Matrix & matrix) {
+
+	if (this->arr) {
+		for (size_t i = 0; i < N; i++) {
+			delete[] this->arr[i];
+		}
+		delete[] this->arr;
+	}
+
+	this->M = matrix.M;
+	this->N = matrix.N;
+
+	this->arr = new double*[N];
+	for (size_t i = 0; i < N; i++) {
+		this->arr[i] = new double[M];
+		for (size_t j = 0; j < N; j++) {
+			this->arr[i][j] = matrix[i][j];
+		}
+	}
+
+	return (*this);
+}
+
 double * const Matrix::operator[](size_t index) {
 	return this->arr[index];
 }
@@ -105,12 +136,12 @@ const double * const Matrix::operator[](size_t index) const {
 
 Matrix Matrix::operator+(const Matrix & other) const {
 	if (!this->equalsSize(other)) {
-		throw std::string("Bad size !");
+		throw std::string("Operacja + zly rozmiar: " + std::to_string(this->M) + "x" + std::to_string(this->N) + " vs " + std::to_string(other.M) + "x" + std::to_string(other.N));
 	}
 
 	Matrix new_Matrix = Matrix(*this);
 	for (size_t i = 0; i < N; i++) {
-		for (size_t j = 0; j < N; j++) {
+		for (size_t j = 0; j < M; j++) {
 			new_Matrix[i][j] += other[i][j];
 		}
 	}
@@ -120,12 +151,12 @@ Matrix Matrix::operator+(const Matrix & other) const {
 
 Matrix Matrix::operator-(const Matrix & other) const {
 	if (!this->equalsSize(other)) {
-		throw std::string("Bad size !");
+		throw std::string("Operacja - zly rozmiar: " + std::to_string(this->M) + "x" + std::to_string(this->N) + " vs " + std::to_string(other.M) + "x" + std::to_string(other.N));
 	}
 
 	Matrix new_Matrix = Matrix(*this);
 	for (size_t i = 0; i < N; i++) {
-		for (size_t j = 0; j < N; j++) {
+		for (size_t j = 0; j < M; j++) {
 			new_Matrix[i][j] -= other[i][j];
 		}
 	}
@@ -136,7 +167,7 @@ Matrix Matrix::operator-(const Matrix & other) const {
 Matrix Matrix::operator*(double value) const {
 	Matrix new_Matrix = Matrix(*this);
 	for (size_t i = 0; i < N; i++) {
-		for (size_t j = 0; j < N; j++) {
+		for (size_t j = 0; j < M; j++) {
 			new_Matrix[i][j] *= value;
 		}
 	}
@@ -146,7 +177,7 @@ Matrix Matrix::operator*(double value) const {
 
 Matrix Matrix::operator*(const Matrix & other) const {
 	if (!this->canBeMultiple(other)) {
-		throw std::string("Bad size !");
+		throw std::string("Operacja * zly rozmiar: " + std::to_string(this->M) + "x" + std::to_string(this->N) + " vs " + std::to_string(other.M) + "x" + std::to_string(other.N));
 	}
 
 	Matrix new_Matrix(this->N, other.M);
@@ -175,7 +206,7 @@ void Matrix::print() const {
 
 bool Matrix::isTriangularUpper() const {
 	if (!this->isSquared()) {
-		throw std::string("Bad size !");
+		return false;
 	}
 
 	for (size_t i = 1; i < N; i++) {
@@ -190,7 +221,7 @@ bool Matrix::isTriangularUpper() const {
 
 bool Matrix::isTriangularLower() const {
 	if (!this->isSquared()) {
-		throw std::string("Bad size !");
+		return false;
 	}
 
 	for (size_t i = 0; i < (N - 1); i++) {
@@ -267,27 +298,68 @@ bool Matrix::isSquared() const {
 }
 
 
-Matrix Matrix::podstawienieWPrzod(const Matrix & other) const {
-	if (!this->canBeMultiple(other)) {
+Matrix Matrix::podstawienieWPrzod(const Matrix & vector) const {
+	if (!this->canBeMultiple(vector)) {
 		throw std::string("Bad size !");
 	}
 	else if (!this->isTriangularLower()) {
 		throw std::string("Bad Matrix !");
 	}
-	else if (!other.isVector()) {
+	else if (!vector.isVector()) {
 		throw std::string("Matrix have to be vector !");
 	}
 
-	Matrix result = Matrix(other);
+	Matrix result = Matrix(vector);
 	for (size_t i = 0; i < this->N; i++) {
 		double sum = 0;
 		for (size_t j = 0; j < i; j++) {
 			sum += (result[j][0] * (*this)[i][j]);
 		}
+		if ((*this)[i][i] == 0) {
+			throw "Zero on diagonal !";
+		}
 		result[i][0] = (result[i][0] - sum) / (*this)[i][i];
 	}
 
 	return result;
+}
+
+Matrix Matrix::metodaJacobiego(const Matrix & vector) const {
+	const Matrix U = this->getTriangularUpper();
+	const Matrix L = this->getTriangularLower();
+	const Matrix D = this->getDiagnonal();
+
+	const Matrix helper = D.podstawienieWPrzod(vector);
+	Matrix residuum = Matrix(vector.N, (size_t) 1);
+	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
+
+	size_t i = 0;
+	while (residuum.norm() > 0.00000000000001 && i <= 1000) {
+		r = helper - D.podstawienieWPrzod((L + U)*r);
+		residuum = (*this) * r - vector;
+		i++;
+	}
+
+	return r;
+}
+
+Matrix Matrix::metodaSeidla(const Matrix & vector) const {
+	const Matrix U = this->getTriangularUpper();
+	const Matrix L = this->getTriangularLower();
+	const Matrix D = this->getDiagnonal();
+
+	const Matrix helper = (D+L).podstawienieWPrzod(vector);
+	Matrix residuum = Matrix(vector.N, (size_t) 1);
+	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
+
+	size_t i = 0;
+	while (residuum.norm() > 0.00000000000001 && i <= 1000) {
+		r = helper - (D+L).podstawienieWPrzod(U*r);
+		residuum = (*this) * r - vector;
+		i++;
+	}
+
+	return r;
 }
 
 double Matrix::norm() const {
@@ -296,4 +368,12 @@ double Matrix::norm() const {
 		result += (*this)[i][0] * (*this)[i][0];
 	}
 	return sqrt(result);
+}
+
+size_t Matrix::getN() const {
+	return this->N;
+}
+
+size_t Matrix::getM() const {
+	return this->M;
 }
