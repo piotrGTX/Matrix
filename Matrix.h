@@ -36,8 +36,6 @@ public:
 	Matrix operator*(double value) const;
 	Matrix operator*(const Matrix& other) const;
 
-	Matrix operator+(Matrix&& other) const;
-
 	void print() const;
 
 	bool isSquared() const;
