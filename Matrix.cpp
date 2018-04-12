@@ -1,9 +1,9 @@
 #include "Matrix.h"
 
 
-Matrix Matrix::myMatrixExampleA() {
-	// 165664
-	const size_t N = 9 * 6 * 4;
+Matrix Matrix::myMatrixExample(const size_t N) {
+	// 165206
+	// 195664
 	Matrix result = Matrix(N, (double)0);
 
 	double a1 = 5 + 6;
@@ -29,9 +29,8 @@ Matrix Matrix::myMatrixExampleA() {
 	return result;
 }
 
-Matrix Matrix::myVectorExampleA() {
+Matrix Matrix::myVectorExample(const size_t N) {
 	// 165664
-	const size_t N = 9 * 6 * 4;
 	Matrix result = Matrix(N, (size_t) 1);
 
 	const size_t f = 5;
@@ -67,7 +66,7 @@ Matrix::Matrix(size_t N, const double** new_arr) : Matrix(N, N, new_arr) {
 
 Matrix::Matrix(size_t N, size_t M, double value) : Matrix(N, M) {
 	for (size_t i = 0; i < N; i++) {
-		for (size_t j = 0; j < M; j++) {
+		for (size_t j = 0; j < M; j++) {	
 			this->arr[i][j] = value;
 		}
 	}
@@ -303,7 +302,7 @@ Matrix Matrix::podstawienieWPrzod(const Matrix & vector) const {
 		throw std::string("Bad size !");
 	}
 	else if (!this->isTriangularLower()) {
-		throw std::string("Bad Matrix !");
+		throw std::string("Matrix isn't triangular lower !");
 	}
 	else if (!vector.isVector()) {
 		throw std::string("Matrix have to be vector !");
@@ -324,6 +323,33 @@ Matrix Matrix::podstawienieWPrzod(const Matrix & vector) const {
 	return result;
 }
 
+Matrix Matrix::podstawienieWTyl(const Matrix & vector) const {
+	if (!this->canBeMultiple(vector)) {
+		throw std::string("Bad size !");
+	}
+	else if (!this->isTriangularUpper()) {
+		this->isTriangularUpper();
+		throw std::string("Matrix isn't triangular upper !");
+	}
+	else if (!vector.isVector()) {
+		throw std::string("Matrix have to be vector !");
+	}
+
+	Matrix result = Matrix(vector);
+	for (int i = (this->N - 1); i >= 0; i--) {
+		double sum = 0;
+		for (int j = (this->N - 1); j > i; j--) {
+			sum += (result[j][0] * (*this)[i][j]);
+		}
+		if ((*this)[i][i] == 0) {
+			throw "Zero on diagonal !";
+		}
+		result[i][0] = (result[i][0] - sum) / (*this)[i][i];
+	}
+
+	return result;
+}
+
 Matrix Matrix::metodaJacobiego(const Matrix & vector) const {
 	const Matrix U = this->getTriangularUpper();
 	const Matrix L = this->getTriangularLower();
@@ -333,12 +359,14 @@ Matrix Matrix::metodaJacobiego(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
+	residuum = (*this) * r - vector;
 	size_t i = 0;
-	while (residuum.norm() > 0.00000000000001 && i <= 1000) {
+	while (residuum.norm() > 0.00000000000001 && i <= 50) {
 		r = helper - D.podstawienieWPrzod((L + U)*r);
 		residuum = (*this) * r - vector;
 		i++;
 	}
+	std::cout << "Ilosc iteracji: " << i << std::endl;
 
 	return r;
 }
@@ -352,14 +380,41 @@ Matrix Matrix::metodaSeidla(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
+	residuum = (*this) * r - vector;
 	size_t i = 0;
-	while (residuum.norm() > 0.00000000000001 && i <= 1000) {
+	while (residuum.norm() > 0.00000000000001 && i <= 50) {
 		r = helper - (D+L).podstawienieWPrzod(U*r);
 		residuum = (*this) * r - vector;
 		i++;
 	}
+	std::cout << "Ilosc iteracji: " << i << std::endl;
 
 	return r;
+}
+
+Matrix Matrix::faktoryzacjaLU(const Matrix & vector) const {
+	Matrix U = Matrix(*this);
+	Matrix L = Matrix(this->N, (double) 0); // Jednostkowy
+	for (size_t i = 0; i < L.getN(); i++)
+		L[i][i] = 1;
+
+	for (size_t k = 0; k < (this->N - 1); k++) {
+		for (size_t j = k + 1; j < (this->N); j++) {
+			L[j][k] = U[j][k] / U[k][k];
+			for (size_t i = k; i < this->N; i++) {
+				U[j][i] = U[j][i] - (L[j][k] * U[k][i]);
+			}
+		}
+	}
+
+	// Usuwanie œmieci 
+	U = U.getTriangularUpper() + U.getDiagnonal();
+	L = L.getTriangularLower() + L.getDiagnonal(); 
+
+	const Matrix Y = L.podstawienieWPrzod(vector);
+	const Matrix X = U.podstawienieWTyl(Y);
+
+	return X;
 }
 
 double Matrix::norm() const {

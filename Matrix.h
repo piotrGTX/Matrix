@@ -6,8 +6,8 @@
 class Matrix {
 public:
 
-	static Matrix myMatrixExampleA();
-	static Matrix myVectorExampleA();
+	static Matrix myMatrixExample(const size_t N);
+	static Matrix myVectorExample(const size_t N);
 
 	// Nie zainicjowana
 	Matrix(size_t N, size_t M);
@@ -36,6 +36,8 @@ public:
 	Matrix operator*(double value) const;
 	Matrix operator*(const Matrix& other) const;
 
+	Matrix operator+(Matrix&& other) const;
+
 	void print() const;
 
 	bool isSquared() const;
@@ -51,8 +53,10 @@ public:
 	Matrix getDiagnonal() const;
 
 	Matrix podstawienieWPrzod(const Matrix & vector) const;
+	Matrix podstawienieWTyl(const Matrix & vector) const;
 	Matrix metodaJacobiego(const Matrix& vector) const;
 	Matrix metodaSeidla(const Matrix& vector) const;
+	Matrix faktoryzacjaLU(const Matrix& vector) const;
 
 	double norm() const;
 
