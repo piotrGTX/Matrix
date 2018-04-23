@@ -6,7 +6,7 @@
 class Matrix {
 public:
 
-	static Matrix myMatrixExample(const size_t N);
+	static Matrix myMatrixExample(const size_t N, const double a1, const double a2, const double a3);
 	static Matrix myVectorExample(const size_t N);
 
 	// Nie zainicjowana

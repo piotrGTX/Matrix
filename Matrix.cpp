@@ -1,14 +1,9 @@
 #include "Matrix.h"
 
 
-Matrix Matrix::myMatrixExample(const size_t N) {
-	// 165206
+Matrix Matrix::myMatrixExample(const size_t N, const double a1, const double a2, const double a3) {
 	// 195664
 	Matrix result = Matrix(N, (double)0);
-
-	double a1 = 5 + 6;
-	double a2 = (-1);
-	double a3 = (-1);
 
 	for (size_t i = 0; i < N; i++) {
 		result[i][i] = a1;
@@ -33,9 +28,9 @@ Matrix Matrix::myVectorExample(const size_t N) {
 	// 165664
 	Matrix result = Matrix(N, (size_t) 1);
 
-	const size_t f = 5;
+	const size_t f = 5 + 1; // 3 Cyfra mojego indeksu + 1
 	for (size_t i = 0; i < N; i++) {
-		result[i][0] = sin((i + 1)*(f + 1));
+		result[i][0] = sin((i + 1)*f);
 	}
 
 	return result;
@@ -135,7 +130,7 @@ const double * const Matrix::operator[](size_t index) const {
 
 Matrix Matrix::operator+(const Matrix & other) const {
 	if (!this->equalsSize(other)) {
-		throw std::string("Operacja + zly rozmiar: " + std::to_string(this->M) + "x" + std::to_string(this->N) + " vs " + std::to_string(other.M) + "x" + std::to_string(other.N));
+			 std::string("Operacja + zly rozmiar: " + std::to_string(this->M) + "x" + std::to_string(this->N) + " vs " + std::to_string(other.M) + "x" + std::to_string(other.N));
 	}
 
 	Matrix new_Matrix = Matrix(*this);
@@ -359,13 +354,21 @@ Matrix Matrix::metodaJacobiego(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
+	const double limit_e = pow(10, -9); // Wartoœæ akceptowalna
+	const size_t max_i = 400; // Maksymalna iloœæ iteracji
+
 	residuum = (*this) * r - vector;
 	size_t i = 0;
-	while (residuum.norm() > 0.00000000000001 && i <= 50) {
+	while (residuum.norm() > limit_e && i < max_i) {
 		r = helper - D.podstawienieWPrzod((L + U)*r);
 		residuum = (*this) * r - vector;
 		i++;
 	}
+
+	if (i >= max_i) {
+		std::cout << "Przerwane z powodu ilosci iteracji !" << std::endl;
+	}
+	std::cout << "Norma z residuum: " << residuum.norm() << std::endl;
 	std::cout << "Ilosc iteracji: " << i << std::endl;
 
 	return r;
@@ -380,13 +383,21 @@ Matrix Matrix::metodaSeidla(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
+	const double limit_e = pow(10, -9); // Wartoœæ akceptowalna
+	const size_t max_i = 400; // Maksymalna iloœæ iteracji
+
 	residuum = (*this) * r - vector;
 	size_t i = 0;
-	while (residuum.norm() > 0.00000000000001 && i <= 50) {
+	while (residuum.norm() > limit_e && i < max_i) {
 		r = helper - (D+L).podstawienieWPrzod(U*r);
 		residuum = (*this) * r - vector;
 		i++;
 	}
+	
+	if (i >= max_i) {
+		std::cout << "Przerwane z powodu ilosci iteracji !" << std::endl;
+	}
+	std::cout << "Norma z residuum: " << residuum.norm() << std::endl;
 	std::cout << "Ilosc iteracji: " << i << std::endl;
 
 	return r;

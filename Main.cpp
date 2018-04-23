@@ -7,76 +7,153 @@
 
 using namespace std;
 
-void Example(const size_t N) {
-
-	Matrix a = Matrix::myMatrixExample(N);
-	Matrix b = Matrix::myVectorExample(N);
-
+clock_t statystykaMetodaJacobiego(const Matrix A, const Matrix b) {
 	clock_t start, stop;
 
-	cout << "N = " << N << endl;
-
-	start = clock();
-	Matrix result2 = a.metodaJacobiego(b);
-	stop = clock() - start;
-	cout << "Jacobi: " << stop / 1000.0 << endl;
-	//result2.print();
-	//cout << "------" << endl;
-	start = clock();
-	Matrix result3 = a.metodaSeidla(b);
-	stop = clock() - start;
-	cout << "Seidla: " << stop / 1000.0 << endl;
-	//result3.print();
-	//cout << "------" << endl;
-	start = clock();
-	Matrix result4 = a.faktoryzacjaLU(b);
-	stop = clock() - start;
-	cout << "LU: " << stop / 1000.0 << endl;
-
-	ofstream out("Wyniki.txt");
-	for (size_t i = 0; i < result2.getN(); i++) {
-		out << result2[i][0] << '\t' << result3[i][0] << '\t' << result4[i][0] << endl;
+	try {
+		cout << "----" << endl;
+		cout << "Metoda Jacobiego" << endl;
+		start = clock();
+		const Matrix Result_Jacobi = A.metodaJacobiego(b);
+		stop = clock() - start;
+		cout << "Czas: " << stop << endl;
 	}
-	out.close();
+	catch (string e) {
+		cout << "Problem z metoda Jacobiego: " << e << endl;
+	}
 
+	return stop;
+}
+
+clock_t statystykaMetodaSeidla(const Matrix A, const Matrix b) {
+	clock_t start, stop;
+
+	try {
+		cout << "----" << endl;
+		cout << "Metoda Seidla" << endl;
+		start = clock();
+		const Matrix Result_Seidla = A.metodaSeidla(b);
+		stop = clock() - start;
+		cout << "Czas: " << stop << endl;
+	}
+	catch (string e) {
+		cout << "Problem z metoda Seidla: " << e << endl;
+	}
+
+	return stop;
+}
+
+clock_t statystykaMetodaLU(const Matrix A, const Matrix b) {
+	clock_t start, stop;
+
+	try {
+		cout << "----" << endl;
+		cout << "Metoda LU" << endl;
+		start = clock();
+		const Matrix Result_LU = A.faktoryzacjaLU(b);
+		stop = clock() - start;
+		cout << "Czas: " << stop << endl;
+
+		//cout << "Norma residuum: " << ((A*Result_LU) - b).norm() << endl;
+	}
+	catch (string e) {
+		cout << "Problem z metoda LU: " << e << endl;
+	}
+
+	return stop;
+}
+
+void Example_B() {
+
+	cout << "Zadanie B" << endl;
+
+	const size_t N = 9 * 6 * 4; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
+	const Matrix A = Matrix::myMatrixExample(N, 5 + 6, -1, -1);
+	const Matrix b = Matrix::myVectorExample(N);
+
+	statystykaMetodaJacobiego(A, b);
+	statystykaMetodaSeidla(A, b);
 	cout << endl;
 }
 
-void ExampleB() {
-	Matrix a = Matrix((size_t)3, (double) 0);
-	Matrix b = Matrix((size_t)3, (size_t) 1);
+void Example_C() {
 
-	a[0][0] = 1;
-	a[0][1] = 2;
-	a[0][2] = 3;
-	a[1][1] = 1;
-	a[2][2] = 3;
+	cout << "Zadanie C" << endl;
 
-	b[0][0] = 20;
-	b[1][0] = 5;
-	b[2][0] = 9;
+	const size_t N = 964; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
+	const Matrix A = Matrix::myMatrixExample(N, 3, -1, -1); // Wynika z zadania
+	const Matrix b = Matrix::myVectorExample(N);
 
-	Matrix c = a.podstawienieWTyl(b);
-	c.print();
-	c = a.metodaJacobiego(b);
-	c.print();
-	c = a.metodaSeidla(b);
-	c.print();
-	c = a.faktoryzacjaLU(b);
-	c.print();
+	statystykaMetodaJacobiego(A, b);
+	statystykaMetodaSeidla(A, b);
+	statystykaMetodaLU(A, b);
+	cout << endl;
+}
+
+void Example_E() {
+
+	cout << "Zadanie E" << endl;
+
+	const size_t elements[] = { 100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 8000 };
+	const size_t N = 964; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
+
+	const clock_t time_limit = 60000;
+	clock_t last_max_time = 0;
+	ofstream file = ofstream("stat.txt");
+	try {
+		file << "N" << '\t' << "Czas Jacobiego" << '\t' << "Czas Seidla" << '\t' << "Czas LU" << endl;
+		for (const size_t e : elements) {
+			cout << endl << "------ Ilosc elementow: " << e << endl << endl;
+			const Matrix A = Matrix::myMatrixExample(e, 5 + 6, -1, -	1);
+			const Matrix b = Matrix::myVectorExample(e);
+
+			clock_t time_a = statystykaMetodaJacobiego(A, b);
+			clock_t time_b = statystykaMetodaSeidla(A, b);
+			clock_t time_c = 0;
+			if (last_max_time <= time_limit) {
+				time_c = statystykaMetodaLU(A, b);
+				if (time_c > last_max_time)
+					last_max_time = time_c;
+			}
+
+			file << e << '\t' << time_a << '\t' << time_b << '\t' << time_c << endl;
+		}
+	}
+	catch (string e) {
+		cout << e << endl;
+	}
+	file.close();
+
+	cout << endl;
+
+}
+
+void Example_A() {
+
+	// Wyœwietli fragmengt macierzy A i wektora B
+
+	const size_t N = 964; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
+	const Matrix A = Matrix::myMatrixExample(N, 5+6, -1, -1);
+	const Matrix b = Matrix::myVectorExample(N);
+
+	cout << endl;
+	for (size_t i = 0; i < 10; i++) {
+		cout << '\t';
+		for (size_t y = 0; y < 10; y++) {
+			cout << A[i][y] << '\t';
+		}
+		cout << "   " << b[i][0] << endl;
+	}
+
+	cout << endl << endl;
 }
 
 int main() {
 
-	try {
-		for (size_t i = 500; i <= 5000; i += 500) {
-			Example(i);
-		}
-		//ExampleB();
-	}
-	catch (string e) {
-		cout << "Error: " << e << endl;
-	}
+	//Example_A();
+	//Example_B();
+	//Example_C();
+	//Example_E();
 
 	system("PAUSE");
 
