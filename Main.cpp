@@ -67,7 +67,7 @@ void Example_B() {
 
 	cout << "Zadanie B" << endl;
 
-	const size_t N = 9 * 6 * 4; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
+	const size_t N = 964; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
 	const Matrix A = Matrix::myMatrixExample(N, 5 + 6, -1, -1);
 	const Matrix b = Matrix::myVectorExample(N);
 
@@ -95,7 +95,6 @@ void Example_E() {
 	cout << "Zadanie E" << endl;
 
 	const size_t elements[] = { 100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 8000 };
-	const size_t N = 964; // 6 - przedostania cyfra indeksu, 4 ostatnia cyfra indeksu
 
 	const clock_t time_limit = 60000;
 	clock_t last_max_time = 0;
@@ -104,7 +103,7 @@ void Example_E() {
 		file << "N" << '\t' << "Czas Jacobiego" << '\t' << "Czas Seidla" << '\t' << "Czas LU" << endl;
 		for (const size_t e : elements) {
 			cout << endl << "------ Ilosc elementow: " << e << endl << endl;
-			const Matrix A = Matrix::myMatrixExample(e, 5 + 6, -1, -	1);
+			const Matrix A = Matrix::myMatrixExample(e, 5 + 6, -1, -1);
 			const Matrix b = Matrix::myVectorExample(e);
 
 			clock_t time_a = statystykaMetodaJacobiego(A, b);
