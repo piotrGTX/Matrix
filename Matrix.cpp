@@ -187,17 +187,6 @@ Matrix Matrix::operator*(const Matrix & other) const {
 	return new_Matrix;
 }
 
-void Matrix::print() const {
-	for (size_t i = 0; i < this->N; i++) {
-		for (size_t j = 0; j < this->M; j++) {
-			std::cout << (*this)[i][j] << ' ';
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
-}
-
-
 bool Matrix::isTriangularUpper() const {
 	if (!this->isSquared()) {
 		return false;
@@ -291,7 +280,6 @@ bool Matrix::isSquared() const {
 	return (this->N == this->M);
 }
 
-
 Matrix Matrix::podstawienieWPrzod(const Matrix & vector) const {
 	if (!this->canBeMultiple(vector)) {
 		throw std::string("Bad size !");
@@ -354,7 +342,7 @@ Matrix Matrix::metodaJacobiego(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
-	const double limit_e = pow(10, -9); // Wartoœæ akceptowalna
+	const double limit_e = 1e-9; // Wartoœæ akceptowalna
 	const size_t max_i = 400; // Maksymalna iloœæ iteracji
 
 	residuum = (*this) * r - vector;
@@ -383,7 +371,7 @@ Matrix Matrix::metodaSeidla(const Matrix & vector) const {
 	Matrix residuum = Matrix(vector.N, (size_t) 1);
 	Matrix r = Matrix(vector.N, (size_t) 1, (double) 1.0);
 
-	const double limit_e = pow(10, -9); // Wartoœæ akceptowalna
+	const double limit_e = 1e-9; // Wartoœæ akceptowalna
 	const size_t max_i = 400; // Maksymalna iloœæ iteracji
 
 	residuum = (*this) * r - vector;

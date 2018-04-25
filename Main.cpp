@@ -7,57 +7,21 @@
 
 using namespace std;
 
-clock_t statystykaMetodaJacobiego(const Matrix A, const Matrix b) {
+typedef Matrix(Matrix::*MetodaRozwiazywania)(const Matrix&) const;
+
+clock_t statystykaMetody(const Matrix A, const Matrix b, MetodaRozwiazywania metoda, const string& nazwa) {
 	clock_t start, stop;
 
 	try {
 		cout << "----" << endl;
-		cout << "Metoda Jacobiego" << endl;
+		cout << nazwa << endl;
 		start = clock();
-		const Matrix Result_Jacobi = A.metodaJacobiego(b);
+		const Matrix result = (A.*metoda)(b);
 		stop = clock() - start;
 		cout << "Czas: " << stop << endl;
 	}
 	catch (string e) {
-		cout << "Problem z metoda Jacobiego: " << e << endl;
-	}
-
-	return stop;
-}
-
-clock_t statystykaMetodaSeidla(const Matrix A, const Matrix b) {
-	clock_t start, stop;
-
-	try {
-		cout << "----" << endl;
-		cout << "Metoda Seidla" << endl;
-		start = clock();
-		const Matrix Result_Seidla = A.metodaSeidla(b);
-		stop = clock() - start;
-		cout << "Czas: " << stop << endl;
-	}
-	catch (string e) {
-		cout << "Problem z metoda Seidla: " << e << endl;
-	}
-
-	return stop;
-}
-
-clock_t statystykaMetodaLU(const Matrix A, const Matrix b) {
-	clock_t start, stop;
-
-	try {
-		cout << "----" << endl;
-		cout << "Metoda LU" << endl;
-		start = clock();
-		const Matrix Result_LU = A.faktoryzacjaLU(b);
-		stop = clock() - start;
-		cout << "Czas: " << stop << endl;
-
-		//cout << "Norma residuum: " << ((A*Result_LU) - b).norm() << endl;
-	}
-	catch (string e) {
-		cout << "Problem z metoda LU: " << e << endl;
+		cout << "Problem z " << nazwa << ": " << e << endl;
 	}
 
 	return stop;
@@ -71,8 +35,8 @@ void Example_B() {
 	const Matrix A = Matrix::myMatrixExample(N, 5 + 6, -1, -1);
 	const Matrix b = Matrix::myVectorExample(N);
 
-	statystykaMetodaJacobiego(A, b);
-	statystykaMetodaSeidla(A, b);
+	statystykaMetody(A, b, &Matrix::metodaJacobiego, "metoda Jacobiego");
+	statystykaMetody(A, b, &Matrix::metodaSeidla, "metoda Gaussa-Seidla");
 	cout << endl;
 }
 
@@ -84,9 +48,9 @@ void Example_C() {
 	const Matrix A = Matrix::myMatrixExample(N, 3, -1, -1); // Wynika z zadania
 	const Matrix b = Matrix::myVectorExample(N);
 
-	statystykaMetodaJacobiego(A, b);
-	statystykaMetodaSeidla(A, b);
-	statystykaMetodaLU(A, b);
+	statystykaMetody(A, b, &Matrix::metodaJacobiego, "metoda Jacobiego");
+	statystykaMetody(A, b, &Matrix::metodaSeidla, "metoda Gaussa-Seidla");
+	statystykaMetody(A, b, &Matrix::faktoryzacjaLU, "faktoryzacja LU");
 	cout << endl;
 }
 
@@ -100,17 +64,17 @@ void Example_E() {
 	clock_t last_max_time = 0;
 	ofstream file = ofstream("stat.txt");
 	try {
-		file << "N" << '\t' << "Czas Jacobiego" << '\t' << "Czas Seidla" << '\t' << "Czas LU" << endl;
+		file << "N" << '\t' << "Czas Jacobiego" << '\t' << "Czas Gaussa-Seidla" << '\t' << "Czas LU" << endl;
 		for (const size_t e : elements) {
 			cout << endl << "------ Ilosc elementow: " << e << endl << endl;
 			const Matrix A = Matrix::myMatrixExample(e, 5 + 6, -1, -1);
 			const Matrix b = Matrix::myVectorExample(e);
 
-			clock_t time_a = statystykaMetodaJacobiego(A, b);
-			clock_t time_b = statystykaMetodaSeidla(A, b);
+			clock_t time_a = statystykaMetody(A, b, &Matrix::metodaJacobiego, "metoda Jacobiego");
+			clock_t time_b = statystykaMetody(A, b, &Matrix::metodaSeidla, "metoda Gaussa-Seidla");
 			clock_t time_c = 0;
 			if (last_max_time <= time_limit) {
-				time_c = statystykaMetodaLU(A, b);
+				time_c = statystykaMetody(A, b, &Matrix::faktoryzacjaLU, "faktoryzacja LU");
 				if (time_c > last_max_time)
 					last_max_time = time_c;
 			}
@@ -149,10 +113,10 @@ void Example_A() {
 
 int main() {
 
-	//Example_A();
-	//Example_B();
-	//Example_C();
-	//Example_E();
+	Example_A();
+	Example_B();
+	Example_C();
+	Example_E();
 
 	system("PAUSE");
 
