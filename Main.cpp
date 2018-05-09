@@ -113,10 +113,10 @@ void Example_A() {
 
 int main() {
 
-	Example_A();
+	//Example_A();
 	Example_B();
-	Example_C();
-	Example_E();
+	//Example_C();
+	//Example_E();
 
 	system("PAUSE");
 

@@ -413,6 +413,8 @@ Matrix Matrix::faktoryzacjaLU(const Matrix & vector) const {
 	const Matrix Y = L.podstawienieWPrzod(vector);
 	const Matrix X = U.podstawienieWTyl(Y);
 
+	std::cout << "Norma z residuum: " << ((*this)*X - vector).norm() << std::endl;
+
 	return X;
 }
 
